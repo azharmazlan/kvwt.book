@@ -3,279 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KVWT Booking Room</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Tempahan Bilik</title>
   <style>
-    body {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #00ffcc;
-      font-family: 'Orbitron', sans-serif;
-    }
-    .futuristic-button {
-      background: linear-gradient(45deg, #00ffcc, #00cc99);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .futuristic-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00ffcc;
-    }
-    .neon-text {
-      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00cc99;
-    }
-    .disabled-date {
-      background-color: #4b5563 !important;
-      cursor: not-allowed !important;
-    }
-    .booked-slot {
-      color: #ff4444;
-      font-style: italic;
-    }
+    body { font-family: 'Georgia', serif; margin: 20px; background-color: #f5f1e9; color: #333; }
+    h2 { text-align: center; color: #4a704a; font-size: 2.5em; border-bottom: 2px solid #4a704a; padding-bottom: 10px; letter-spacing: 2px; }
+    .form-group { margin-bottom: 20px; padding: 20px; background-color: #fff; border: 1px solid #d9c2a9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    label { font-weight: bold; color: #4a704a; font-size: 1.1em; margin-bottom: 5px; display: block; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #d9c2a9; border-radius: 5px; font-family: 'Georgia', serif; background-color: #fafafa; }
+    .time-slot { display: inline-block; margin: 5px; padding: 12px; border: 1px solid #d9c2a9; cursor: pointer; background-color: #e8e0d5; border-radius: 5px; transition: all 0.3s ease; }
+    .time-slot.booked { background-color: #ffcccc; cursor: not-allowed; }
+    .time-slot.available { background-color: #d9e6d9; }
+    .time-slot.selected { background-color: #a3d8a3; font-weight: bold; }
+    button { background-color: #4a704a; color: #fff; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; font-family: 'Georgia', serif; font-size: 1em; transition: background-color 0.3s ease; }
+    button:hover { background-color: #3a5a3a; }
+    #adminControls, #publicBookings { margin-top: 30px; padding: 20px; background-color: #fff; border: 1px solid #d9c2a9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .booking-item { margin: 10px 0; padding: 10px; background-color: #f5f1e9; border: 1px solid #d9c2a9; border-radius: 5px; }
+    .cancel-btn { background-color: #cc0000; padding: 5px 10px; margin-left: 10px; color: white; border: none; border-radius: 3px; cursor: pointer; }
+    #infoText { text-align: center; font-weight: bold; margin: 10px 0; color: #4a704a; }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen">
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-bold text-center neon-text mb-4">KVWT Booking Room</h1>
-    <p class="text-center neon-text mb-8">sila contact admin bagi urusan tempahan bilik</p>
-
-    <!-- Date Selection -->
-    <div class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-      <label for="date" class="block text-xl font-medium">Pilih Tarikh:</label>
-      <input type="date" id="date" class="w-full p-3 border-none rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-400" min="2025-06-30">
-    </div>
-
-    <!-- Room Selection -->
-    <div class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-      <label for="room" class="block text-xl font-medium">Pilih Bilik:</label>
-      <select id="room" class="w-full p-3 border-none rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-400">
-        <option value="Pusat Sumber Alamanda">Pusat Sumber Alamanda</option>
-        <option value="Bilik Self Learning">Bilik Self Learning</option>
-        <option value="Bilik APD">Bilik APD</option>
-        <option value="Bilik Kuliah">Bilik Kuliah</option>
-      </select>
-    </div>
-
-    <!-- Time Slots -->
-    <div class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-      <label class="block text-xl font-medium">Pilih Masa:</label>
-      <div id="timeSlots" class="grid grid-cols-4 gap-4 mt-2"></div>
-    </div>
-
-    <!-- Booked Slots Display -->
-    <div id="bookedSlots" class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-      <h3 class="text-xl font-medium mb-2">Tempahan Terkini:</h3>
-      <ul id="bookedList" class="list-disc pl-5 text-green-300"></ul>
-    </div>
-
-    <!-- Booking Form -->
-    <div id="bookingForm" class="hidden">
-      <input type="text" id="name" placeholder="Nama Anda" class="w-full p-3 border-none rounded bg-gray-700 text-white mb-2 focus:outline-none focus:ring-2 focus:ring-green-400">
-      <textarea id="note" placeholder="leave some note" class="w-full p-3 border-none rounded bg-gray-700 text-white mb-2 focus:outline-none focus:ring-2 focus:ring-green-400" rows="2"></textarea>
-      <button id="submitBooking" class="w-full futuristic-button text-white p-3 rounded">Tempah</button>
-    </div>
-
-    <!-- Booking Confirmation -->
-    <div id="confirmation" class="hidden text-center mt-4">
-      <p id="confirmationMessage" class="text-green-400 text-lg"></p>
-    </div>
-
-    <!-- Admin Panel (Hidden by Default) -->
-    <div id="adminPanel" class="hidden mt-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold neon-text mb-4">Panel Admin</h2>
-      <ul id="bookingList" class="list-disc pl-5 text-green-300"></ul>
-    </div>
-
-    <!-- Admin Login -->
-    <div id="adminLogin" class="mt-6">
-      <input type="password" id="adminPass" placeholder="Kata Laluan Admin" class="w-full p-3 border-none rounded bg-gray-700 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-green-400">
-      <button id="adminLoginBtn" class="w-full futuristic-button text-white p-3 rounded">Log Masuk Admin</button>
+<body>
+  <h2>TEMPAHAN BILIK KHAS</h2>
+  <p id="infoText">Sila pilih tarikh dahulu untuk mengetahui waktu sudah ditempah atau belum.</p>
+  <div class="form-group">
+    <label>Name:</label>
+    <input type="text" id="name" placeholder="First Name Last Name">
+  </div>
+  <div class="form-group">
+    <label>Bilik Yang Ingin Ditempah:</label>
+    <select id="room">
+      <option value="">Please Select Room</option>
+      <option value="apd">Bilik APD</option>
+      <option value="kuliah">Bilik Kuliah</option>
+      <option value="selfLearning">Bilik Self Learning</option>
+      <option value="alamanda">Pusat Sumber Alamanda</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Special Requests:</label>
+    <textarea id="specialRequests"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Appointment Date:</label>
+    <input type="date" id="date">
+    <div id="timeSlots">
+      <div class="time-slot" data-time="08:00">8:00 AM</div>
+      <div class="time-slot" data-time="09:00">9:00 AM</div>
+      <div class="time-slot" data-time="10:00">10:00 AM</div>
+      <div class="time-slot" data-time="11:00">11:00 AM</div>
+      <div class="time-slot" data-time="12:00">12:00 PM</div>
+      <div class="time-slot" data-time="13:00">1:00 PM</div>
+      <div class="time-slot" data-time="14:00">2:00 PM</div>
+      <div class="time-slot" data-time="15:00">3:00 PM</div>
+      <div class="time-slot" data-time="16:00">4:00 PM</div>
+      <div class="time-slot" data-time="17:00">5:00 PM</div>
     </div>
   </div>
+  <button onclick="bookRoom()">Submit</button>
+  <button onclick="toggleAdmin()">Admin Login</button>
+
+  <div id="publicBookings">
+    <h3>Senarai Tempahan Hari Ini</h3>
+    <div id="todayBookings"></div>
+  </div>
+
+  <div id="adminControls">
+    <div class="form-group">
+      <label>Password Admin:</label>
+      <input type="password" id="adminPassword" placeholder="Enter Password">
+      <button onclick="loginAdmin()">Login</button>
+      <button onclick="saveToExcel()">Save to Excel</button>
+    </div>
+    <div id="bookingList"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
 
   <script>
-    function formatTo12Hour(hour) {
-      const period = hour < 12 ? 'AM' : 'PM';
-      const displayHour = hour % 12 || 12;
-      return `${displayHour}:00 ${period}`;
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmQKTQGXlZs8tqT-HZRVpyjHPa4EIeUuI",
+      authDomain: "tempahan-bilik-5a9bc.firebaseapp.com",
+      databaseURL: "https://tempahan-bilik-5a9bc-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tempahan-bilik-5a9bc",
+      storageBucket: "tempahan-bilik-5a9bc.firebasestorage.app",
+      messagingSenderId: "1076720614610",
+      appId: "1:1076720614610:web:7c3c7e0ee75ff57ba0410b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function formatDateToFirebase(dateStr) {
+      const [year, month, day] = dateStr.split("-");
+      return `${day}/${month}/${year}`;
     }
 
-    const timeSlots = [];
-    for (let hour = 8; hour <= 17; hour++) {
-      timeSlots.push(formatTo12Hour(hour));
-    }
+    function bookRoom() {
+      const name = document.getElementById('name').value;
+      const room = document.getElementById('room').value;
+      const specialRequests = document.getElementById('specialRequests').value;
+      const dateRaw = document.getElementById('date').value;
+      const date = formatDateToFirebase(dateRaw);
 
-    const bookings = JSON.parse(localStorage.getItem('bookings')) || {};
+      const selectedTimes = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => slot.dataset.time);
 
-    function getDayName(dateStr) {
-      const days = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
-      const date = new Date(dateStr);
-      return days[date.getDay()];
-    }
-
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      const dayName = getDayName(dateStr);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Bulan bermula dari 0
-      const year = date.getFullYear();
-      return `${dayName}, ${day}-${month}-${year}`;
-    }
-
-    function isWeekday(dateStr) {
-      const date = new Date(dateStr);
-      const day = date.getDay();
-      return day >= 1 && day <= 5; // Isnin hingga Jumaat (1-5)
-    }
-
-    function disableWeekends() {
-      const dateInput = document.getElementById('date');
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 1); // Minimum tarikh esok (28/6/2025)
-      while (!isWeekday(minDate.toISOString().split('T')[0])) {
-        minDate.setDate(minDate.getDate() + 1); // Cari hari bekerja pertama (30/6/2025)
+      if (name && room && selectedTimes.length) {
+        selectedTimes.forEach(time => {
+          db.ref("tempahan").push({ name, room, date, time, specialRequests });
+        });
+        alert("Booking submitted!");
+        document.getElementById('name').value = "";
+        document.getElementById('specialRequests').value = "";
+        document.getElementById('room').value = "";
+        loadBookedSlots();
+        loadTodayBookings();
+      } else {
+        alert("Sila isi semua maklumat dan pilih masa.");
       }
-      dateInput.min = minDate.toISOString().split('T')[0];
-      dateInput.onchange = function() {
-        const selectedDate = this.value;
-        if (!isWeekday(selectedDate)) {
-          alert('Hanya hari bekerja (Isnin - Jumaat) dibenarkan!');
-          this.value = '';
-          updateTimeSlots();
-          updateBookedList();
-        } else {
-          updateTimeSlots();
-          updateBookedList();
-        }
-      };
     }
 
-    function updateTimeSlots() {
-      const room = document.getElementById('room').value;
-      const date = document.getElementById('date').value;
-      const timeSlotsDiv = document.getElementById('timeSlots');
-      timeSlotsDiv.innerHTML = '';
-
-      if (!date || !isWeekday(date)) return;
-
-      const key = `${room}_${date}`;
-      const bookedSlots = bookings[key] ? bookings[key].map(b => b.slot) : [];
-      const availableSlots = timeSlots.filter(slot => !bookedSlots.includes(slot));
-
-      availableSlots.forEach(slot => {
-        const div = document.createElement('div');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `slot_${slot}`;
-        checkbox.value = slot;
-        const label = document.createElement('label');
-        label.htmlFor = `slot_${slot}`;
-        label.textContent = slot;
-        label.className = 'ml-2 text-white';
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        div.className = 'p-2 bg-gray-700 rounded';
-        timeSlotsDiv.appendChild(div);
-      });
-    }
-
-    function updateBookedList() {
-      const room = document.getElementById('room').value;
-      const date = document.getElementById('date').value;
-      const bookedList = document.getElementById('bookedList');
-      bookedList.innerHTML = '';
-
-      if (!date || !isWeekday(date)) return;
-
-      const key = `${room}_${date}`;
-      const bookedData = bookings[key] || [];
-
-      bookedData.forEach(booking => {
-        const li = document.createElement('li');
-        li.textContent = `Ditempah oleh ${booking.name} (${booking.slot})${booking.note ? ` (Catatan: ${booking.note})` : ''}`;
-        li.className = 'booked-slot';
-        bookedList.appendChild(li);
-      });
-    }
-
-    function showBookingForm() {
-      document.getElementById('bookingForm').classList.remove('hidden');
-      document.getElementById('submitBooking').onclick = () => {
-        const name = document.getElementById('name').value;
-        const note = document.getElementById('note').value;
-        const date = document.getElementById('date').value;
-        if (name && date && isWeekday(date)) {
-          const room = document.getElementById('room').value;
-          const key = `${room}_${date}`;
-          if (!bookings[key]) bookings[key] = [];
-          const selectedSlots = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-            .map(cb => cb.value);
-          if (selectedSlots.length > 0) {
-            selectedSlots.forEach(slot => {
-              if (!bookings[key].some(b => b.slot === slot)) {
-                bookings[key].push({ slot, name, note: note || '' });
-              }
+    function loadBookedSlots() {
+      const selectedDate = formatDateToFirebase(document.getElementById("date").value);
+      db.ref("tempahan").once("value", snapshot => {
+        const data = snapshot.val();
+        document.querySelectorAll(".time-slot").forEach(slot => slot.classList.remove('booked'));
+        for (let key in data) {
+          if (data[key].date === selectedDate) {
+            document.querySelectorAll(`.time-slot[data-time="${data[key].time}"]`).forEach(slot => {
+              slot.classList.add("booked");
             });
-            localStorage.setItem('bookings', JSON.stringify(bookings));
-            const formattedDate = formatDate(date);
-            document.getElementById('confirmationMessage').textContent = `Tempahan berjaya untuk ${room} pada ${formattedDate} (${selectedSlots.join(', ')}) oleh ${name}${note ? ` (Catatan: ${note})` : ''}`;
-            document.getElementById('confirmation').classList.remove('hidden');
-            document.getElementById('bookingForm').classList.add('hidden');
-            document.getElementById('name').value = '';
-            document.getElementById('note').value = '';
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            updateTimeSlots();
-            updateBookedList();
           }
         }
-      };
+        loadTodayBookings();
+      });
     }
 
-    document.getElementById('room').onchange = () => {
-      updateTimeSlots();
-      updateBookedList();
-    };
-    document.getElementById('date').onchange = () => {
-      updateTimeSlots();
-      updateBookedList();
-    };
-    disableWeekends();
-    updateTimeSlots();
-    updateBookedList();
-    showBookingForm();
+    function loadTodayBookings() {
+      const selectedDate = formatDateToFirebase(document.getElementById("date").value);
+      db.ref("tempahan").once("value", snapshot => {
+        const data = snapshot.val();
+        const container = document.getElementById("todayBookings");
+        container.innerHTML = "";
+        for (let key in data) {
+          if (data[key].date === selectedDate) {
+            const item = document.createElement("div");
+            item.className = "booking-item";
+            item.textContent = `${data[key].name} - ${data[key].room} pada ${data[key].time}`;
+            container.appendChild(item);
+          }
+        }
+      });
+    }
 
-    // Admin Login
-    document.getElementById('adminLoginBtn').onclick = () => {
-      const password = document.getElementById('adminPass').value;
-      if (password === 'KVWT INTEL') {
-        document.getElementById('adminPanel').classList.remove('hidden');
-        document.getElementById('adminLogin').classList.add('hidden');
-        updateBookingList();
-      }
-    };
+    document.getElementById("date").addEventListener('change', () => {
+      loadBookedSlots();
+      loadTodayBookings();
+    });
 
-    function updateBookingList() {
-      const bookingList = document.getElementById('bookingList');
-      bookingList.innerHTML = '';
-      for (const key in bookings) {
-        bookings[key].forEach(booking => {
-          const [room, date] = key.split('_');
-          const formattedDate = formatDate(date);
-          const li = document.createElement('li');
-          li.textContent = `${room} - ${formattedDate} (${booking.slot}) oleh ${booking.name}${booking.note ? ` (Catatan: ${booking.note})` : ''}`;
-          const cancelBtn = document.createElement('button');
-          cancelBtn.textContent = 'Batalkan';
-          cancelBtn.className = 'ml-2 bg-red-500 text-white p-1 rounded futuristic-button';
-          cancelBtn.onclick = () => {
-            bookings[key] = bookings[key].filter(b => b.slot !== booking.slot || b.name !== booking.name);
-            if (bookings[key].length === 0) delete bookings[key];
-            localStorage.setItem('bookings', JSON.stringify(bookings));
-            updateBookingList();
-            updateBookedList();
-            updateTimeSlots();
-          };
-          li.appendChild(cancelBtn);
-          bookingList.appendChild(li);
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.addEventListener('click', () => {
+          if (!slot.classList.contains('booked')) {
+            slot.classList.toggle('selected');
+            slot.classList.toggle('available');
+          }
         });
+      });
+    });
+
+    function toggleAdmin() {
+      document.getElementById('adminControls').style.display = 'block';
+    }
+
+    function loginAdmin() {
+      const password = document.getElementById('adminPassword').value;
+      if (password === 'KVWT INTEL') {
+        loadAllBookings();
+      } else {
+        alert('Incorrect password!');
       }
+    }
+
+    function loadAllBookings() {
+      db.ref("tempahan").once("value", snapshot => {
+        const data = snapshot.val();
+        const list = document.getElementById("bookingList");
+        list.innerHTML = "";
+        for (let key in data) {
+          const item = document.createElement("div");
+          item.className = "booking-item";
+          item.innerHTML = `${data[key].name} - ${data[key].room} at ${data[key].time} on ${data[key].date} <button class='cancel-btn' onclick='cancelBooking("${key}")'>Cancel</button>`;
+          list.appendChild(item);
+        }
+      });
+    }
+
+    function cancelBooking(key) {
+      db.ref("tempahan/" + key).remove().then(() => {
+        alert("Booking cancelled.");
+        loadAllBookings();
+        loadBookedSlots();
+        loadTodayBookings();
+      });
+    }
+
+    function saveToExcel() {
+      db.ref("tempahan").once("value", snapshot => {
+        const data = snapshot.val();
+        const bookingsArray = Object.values(data);
+        const ws = XLSX.utils.json_to_sheet(bookingsArray);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Tempahan");
+        XLSX.writeFile(wb, "senarai_tempahan.xlsx");
+      });
     }
   </script>
+</body>
+</html>
